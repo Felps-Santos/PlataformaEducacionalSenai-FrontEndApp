@@ -52,9 +52,9 @@ export default function Login() {
 
 
     const handleLogin = async () => {
-        setLoading(true);
+    setLoading(true);
 
-        const resultSchema = loginSchema.safeParse({ cpf, senha });
+    const resultSchema = loginSchema.safeParse({ cpf, senha });
         if (!resultSchema.success) {
             const messages = resultSchema.error.errors.map(e => e.message).join('\n');
             Alert.alert('Erro', messages);
@@ -63,19 +63,25 @@ export default function Login() {
         }
 
         try {
-            console.log('Tentando login com CPF:', cpf, 'e senha:', senha);
             const response = await postLogin(cpf, senha);
-            console.log('Resposta do login:', response);
+
             if (response) {
                 Alert.alert('Sucesso', 'Login realizado com sucesso!');
                 navigation.navigate('Home');
             }
+
         } catch (error) {
-            Alert.alert('Erro', error);
+            const errorMessage =
+                error.response?.data ||
+                error.message ||
+                "Erro desconhecido";
+
+            Alert.alert('Erro', errorMessage);
         } finally {
             setLoading(false);
         }
     };
+
 
     if (loading) {
         return (

@@ -12,18 +12,16 @@ const api = axios.create({
 
 export const postLogin = async (cpf, senha) => {
     try {
-        console.log("Attempting login with CPF:", cpf, "and password:", senha);
         const response = await api.post("auth/login", {
-            cpf: cpf,
+            CPF: cpf,
             senha: senha,
         })
-        console.log("Login response:", response);
         if (response.status === 200) {
             saveData(response.data.id, response.data.token);
             return response.data;
         } else {
-            throw new Error(error.response?.data?.message || "Login failed");
-
+            console.error("Error during login:", error);
+            throw error;
         }
     } catch (error) {
         console.error("Error during login:", error);
@@ -32,3 +30,4 @@ export const postLogin = async (cpf, senha) => {
 }
 
 // cpf = 83582821846
+// nao existe = 00602480841
