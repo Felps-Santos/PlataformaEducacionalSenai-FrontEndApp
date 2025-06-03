@@ -1,15 +1,49 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { fontFamily, colors } from '../css/theme';
 import { AntDesign } from '@expo/vector-icons';
-import { format, parseISO } from "date-fns";
+import { getDataStudent, getCurseStudent, getPeriodStudent } from '../services/api';
+import { getData } from '../services/asyncStorage';
 
-export default function Perfil({ route }) {
+export default function Perfil() {
     const navigation = useNavigation();
-    const [loading, setLoading] = useState(false);
-    const { dataProfile } = route.params;
-    
+    const [loading, setLoading] = useState(true);
+    const [dataProfile, setDataProfile] = useState(null);
+    const [curse, setCurse] = useState(null);
+    const [period, setPeriod] = useState(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const user = await getData();
+                if (user) {
+                    const response = await getDataStudent(user.id, user.token);
+                    const curseResponse = await getCurseStudent(user.id, user.token);
+                    const periodResponse = await getPeriodStudent(user.id, user.token);
+                    if (response && curseResponse && periodResponse) {
+                        const maiorPeriodo = periodResponse.length > 0 ? Math.max(...periodResponse.map(item => item.numero)) : null;
+                        setDataProfile(response);
+                        setCurse(curseResponse);
+                        setPeriod(maiorPeriodo);
+                    } else {
+                        Alert.alert("Erro", "Não foi possível carregar os dados.");
+                    }
+                } else {
+                    Alert.alert("Erro", "Usuário não encontrado.");
+                    navigation.goBack();
+                }
+            } catch (error) {
+                console.error(error);
+                Alert.alert("Erro", "Ocorreu um erro ao buscar os dados.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     if (loading) {
         return (
             <View style={s.loadingContainer}>
@@ -18,16 +52,23 @@ export default function Perfil({ route }) {
         );
     }
 
+    if (!dataProfile) {
+        return (
+            <View style={s.loadingContainer}>
+                <Text>Dados não encontrados.</Text>
+            </View>
+        );
+    }
+
     return (
         <View style={s.container}>
             <View style={s.header}>
-                <TouchableOpacity onPress={()=> navigation.goBack()}>
-                    <AntDesign name='arrowleft' size={48} color={colors.whiteText} style={s.backIcon}/>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <AntDesign name='arrowleft' size={48} color={colors.whiteText} style={s.backIcon} />
                 </TouchableOpacity>
-                <Text style={s.title}>
-                    PERFIL
-                </Text>
+                <Text style={s.title}>PERFIL</Text>
             </View>
+
             <View style={s.mainInformation}>
                 <Image
                     source={require('../../assets/img/user.png')}
@@ -38,85 +79,61 @@ export default function Perfil({ route }) {
                         {dataProfile.nome}
                     </Text>
                 </View>
+
                 <View style={s.card}>
-                    <Text>
-                        Aqui contém o curso
-                    </Text>
-                    <Text>
-                        Aqui contém o email
-                    </Text>
-                    <Text>
-                        Aqui contém o período
-                    </Text>
+                    <View style={s.information}>
+                        <Text style={s.textCard}>Curso:</Text>
+                        <Text style={s.value}>{curse.nome}</Text>
+                    </View>
+                    <View style={s.information}>
+                        <Text style={s.textCard}>Email:</Text>
+                        <Text style={s.value}>{dataProfile.email}</Text>
+                    </View>
+                    <View style={s.information}>
+                        <Text style={s.textCard}>Período:</Text>
+                        <Text style={s.value}>{period} Semestre</Text>
+                    </View>
                 </View>
+
                 <View style={s.information}>
-                    <Text style={s.label}>
-                        CPF:
-                    </Text>
-                    <Text style={s.value}>
-                        {dataProfile.CPF}
-                    </Text>
+                    <Text style={s.label}>CPF:</Text>
+                    <Text style={s.value}>{dataProfile.CPF}</Text>
                 </View>
+
                 <View style={s.information}>
-                    <Text style={s.label}>
-                        Telefone:
-                    </Text>
-                    <Text style={s.value}>
-                        {dataProfile.telefone}
-                    </Text>
+                    <Text style={s.label}>Telefone:</Text>
+                    <Text style={s.value}>{dataProfile.telefone}</Text>
                 </View>
-                <View style={s.information}>
-                    <Text style={s.label}>
-                        Email:
-                    </Text>
-                    <Text style={s.value}>
-                        {dataProfile.email}
-                    </Text>
-                </View>
+
                 <Text style={[s.label, { marginTop: 10, color: colors.purpleLight, fontFamily: fontFamily.medium }]}>
-                    Logradouro
+                    Endereço
                 </Text>
+
                 <View style={s.information}>
-                    <Text style={s.label}>
-                        Logradouro:
-                    </Text>
-                    <Text style={s.value}>
-                        {dataProfile.logradouro}
-                    </Text>
+                    <Text style={s.label}>Logradouro:</Text>
+                    <Text style={s.value}>{dataProfile.logradouro}</Text>
                 </View>
                 <View style={s.information}>
-                    <Text style={s.label}>
-                        Numero:
-                    </Text>
-                    <Text style={s.value}>
-                        {dataProfile.numero}
-                    </Text>
+                    <Text style={s.label}>Número:</Text>
+                    <Text style={s.value}>{dataProfile.numero}</Text>
                 </View>
                 <View style={s.information}>
-                    <Text style={s.label}>
-                        Bairro:
-                    </Text>
-                    <Text style={s.value}>
-                        {dataProfile.bairro}
-                    </Text>
+                    <Text style={s.label}>Bairro:</Text>
+                    <Text style={s.value}>{dataProfile.bairro}</Text>
                 </View>
                 <View style={s.information}>
-                    <Text style={s.label}>
-                        Cidade:
-                    </Text>
-                    <Text style={s.value}>
-                        {dataProfile.cidade}
-                    </Text>
+                    <Text style={s.label}>Cidade:</Text>
+                    <Text style={s.value}>{dataProfile.cidade}</Text>
                 </View>
+
                 <TouchableOpacity style={s.button}>
-                    <Text style={s.text}>
-                        EDITAR PERFIL
-                    </Text>
+                    <Text style={s.text}>EDITAR PERFIL</Text>
                 </TouchableOpacity>
             </View>
         </View>
-    )
+    );
 }
+
 
 const s = StyleSheet.create({
     loadingContainer: { 
@@ -146,6 +163,10 @@ const s = StyleSheet.create({
         width: 130,
         height: 130,
         alignSelf: "center",
+        borderColor: colors.purpleLight,
+        borderWidth: 2,
+        borderRadius: 100,
+        marginTop: 20,
     },
     title: {
         fontFamily: fontFamily.semiBold,
@@ -157,11 +178,15 @@ const s = StyleSheet.create({
     card: {
         borderColor: colors.purpleLight,
         borderWidth: 1,
-        alignItems: "center",
         width: "90%",
         alignSelf: "center",
         borderRadius: 10,
         padding: 10,
+        gap: 5,
+    },
+    textCard: {
+        fontFamily: fontFamily.medium,
+        paddingRight: 10,
     },
     mainInformation: {
         width: "100%",
@@ -195,7 +220,7 @@ const s = StyleSheet.create({
         borderRadius: 5,
         width: '80%',
         alignSelf: "center",
-        marginTop: 20,
+        marginTop: 10,
     },
     text: {
         textAlign: 'center',

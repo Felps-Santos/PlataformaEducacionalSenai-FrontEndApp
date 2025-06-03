@@ -48,3 +48,35 @@ export const getDataStudent = async (id, token) => {
         return null
     }
 }
+
+export const getCurseStudent = async (id, token) => {
+    try {
+        const response = await api.get(`curso/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        if (response) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error("Erro ao buscar curso do aluno: ", error);
+        return null
+    }
+}
+
+export const getPeriodStudent = async (id, token) => {
+    try {
+        const response = await api.get(`${id}/semestres`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        if (response) {
+            return response.data
+        }
+    } catch (error) {
+        console.error("Erro ao buscar periodo do aluno: ", error);
+        return null
+    }
+}

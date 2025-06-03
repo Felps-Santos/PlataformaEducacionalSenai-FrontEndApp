@@ -36,6 +36,7 @@ export default function Login() {
 
         try {
             const response = await postLogin(email, senha);
+            console.log("Response do login: ", response)
             if (response) {
                 const dataStudent = await getDataStudent(response.id, response.token)
                 if (dataStudent) {
