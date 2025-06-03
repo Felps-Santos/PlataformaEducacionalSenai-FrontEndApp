@@ -9,12 +9,12 @@ const icons = {
     AntDesign,
 }
 
-export function Button({ typeIcon, nameIcon, nameTitle, nav }) {
+export function Button({ typeIcon, nameIcon, nameTitle, nav, args }) {
     const navigation = useNavigation();
     const Icon = icons[typeIcon];
     
     return (
-        <TouchableOpacity style={s.button} onPress={() => navigation.navigate(nav)}>
+        <TouchableOpacity style={s.button} onPress={() => navigation.navigate(nav, args)}>
             <Icon name={nameIcon} size={48} color={colors.purpleLight} />
             <Text style={s.buttonText}>{nameTitle}</Text>
         </TouchableOpacity>

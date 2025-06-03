@@ -4,38 +4,10 @@ import { useNavigation } from '@react-navigation/native';
 import { fontFamily, colors } from '../css/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { z } from 'zod';
-import { postLogin } from '../services/api';
-
-function isValidCPF(cpf) {
-  cpf = cpf.replace(/[^\d]+/g, '');
-  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-
-  let sum = 0;
-  let remainder;
-
-  for (let i = 1; i <= 9; i++)
-    sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
-
-  remainder = (sum * 10) % 11;
-  if (remainder === 10 || remainder === 11) remainder = 0;
-  if (remainder !== parseInt(cpf.substring(9, 10))) return false;
-
-  sum = 0;
-  for (let i = 1; i <= 10; i++)
-    sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
-
-  remainder = (sum * 10) % 11;
-  if (remainder === 10 || remainder === 11) remainder = 0;
-  if (remainder !== parseInt(cpf.substring(10, 11))) return false;
-
-  return true;
-}
+import { postLogin, getDataStudent } from '../services/api';
 
 const loginSchema = z.object({
-    cpf: z.string()
-        .length(11, { message: "CPF deve ter 11 dígitos" })
-        .regex(/^\d+$/, { message: "Matrícula deve conter apenas números" })
-        .refine((cpf) => isValidCPF(cpf), { message: "CPF inválido" }),
+    email: z.string().email({ message: "Email inválido" }),
     senha: z.string()
         .min(8, { message: "Senha deve ter no mínimo 8 caracteres" })
         .regex(/[a-z]/, { message: "Senha deve conter letra minúscula" })
@@ -46,7 +18,7 @@ const loginSchema = z.object({
 
 export default function Login() {
     const navigation = useNavigation();
-    const [cpf, setCpf] = useState('');
+    const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -54,7 +26,7 @@ export default function Login() {
     const handleLogin = async () => {
     setLoading(true);
 
-    const resultSchema = loginSchema.safeParse({ cpf, senha });
+    const resultSchema = loginSchema.safeParse({ email, senha });
         if (!resultSchema.success) {
             const messages = resultSchema.error.errors.map(e => e.message).join('\n');
             Alert.alert('Erro', messages);
@@ -63,11 +35,12 @@ export default function Login() {
         }
 
         try {
-            const response = await postLogin(cpf, senha);
-
+            const response = await postLogin(email, senha);
             if (response) {
-                Alert.alert('Sucesso', 'Login realizado com sucesso!');
-                navigation.navigate('Home');
+                const dataStudent = await getDataStudent(response.id, response.token)
+                if (dataStudent) {
+                    navigation.navigate('Home', { student: dataStudent });
+                }
             }
 
         } catch (error) {
@@ -106,11 +79,12 @@ export default function Login() {
                 <View style={s.viewInput}>
                     <MaterialIcons name="perm-identity" size={24} color={colors.purpleLight} />
                     <TextInput 
-                        placeholder='CPF'
-                        keyboardType='numeric'
+                        placeholder='Email'
+                        keyboardType='email-address'
+                        autoCapitalize='none'
                         style={s.textInput}
-                        onChangeText={text => setCpf(text)}
-                        value={cpf}
+                        onChangeText={text => setEmail(text)}
+                        value={email}
                     />
                 </View>
                 <View style={s.viewInput}>

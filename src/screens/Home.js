@@ -4,13 +4,19 @@ import { fontFamily, colors } from "../css/theme";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 import { ViewButtons } from "../components/viewButtons";
+import { deleteData, getData } from "../services/asyncStorage";
 
-export default function Home() {
+export default function Home({ route }) {
     const navigation = useNavigation();
+    const { student } = route.params;
+    const firstName = student.nome.split(" ")[0];
 
-    const handleLogout = () => {
-        console.log('Logout');
-        navigation.navigate('Login');
+    const handleLogout = async () => {
+        await deleteData();
+        const response = await getData();
+        if (response === null) {
+            navigation.navigate('Login');
+        }
     }
 
     return (
@@ -26,7 +32,7 @@ export default function Home() {
             </View>
             <View style={s.apresentation}>
                 <Text style={s.title}>
-                    Olá, usuário!
+                    Olá, {firstName}
                 </Text>
                 <Text style={s.subtitle}>
                     Seja bem-vindo(a) ao portal
@@ -51,6 +57,7 @@ export default function Home() {
                 nameIcon2="user"
                 nameTitle2="PERFIL"
                 nav2="Profile"
+                args2={{ dataProfile: student }}
             />
         </View>
     )
@@ -83,6 +90,7 @@ const s = StyleSheet.create({
     },
     apresentation: {
         marginTop: 80,
+        alignItems: "center",
     },
     logo: {
         width: 150,
