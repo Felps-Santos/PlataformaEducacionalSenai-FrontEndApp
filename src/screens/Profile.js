@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fontFamily, colors } from '../css/theme';
 import { AntDesign } from '@expo/vector-icons';
 import { getDataStudent, getCurseStudent, getPeriodStudent } from '../services/api';
@@ -13,36 +13,39 @@ export default function Perfil() {
     const [curse, setCurse] = useState(null);
     const [period, setPeriod] = useState(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const user = await getData();
-                if (user) {
-                    const response = await getDataStudent(user.id, user.token);
-                    const curseResponse = await getCurseStudent(user.id, user.token);
-                    const periodResponse = await getPeriodStudent(user.id, user.token);
-                    if (response && curseResponse && periodResponse) {
-                        const maiorPeriodo = periodResponse.length > 0 ? Math.max(...periodResponse.map(item => item.numero)) : null;
-                        setDataProfile(response);
-                        setCurse(curseResponse);
-                        setPeriod(maiorPeriodo);
-                    } else {
-                        Alert.alert("Erro", "Não foi possível carregar os dados.");
-                    }
+    const fetchData = async () => {
+        try {
+            const user = await getData();
+            if (user) {
+                const response = await getDataStudent(user.id, user.token);
+                const curseResponse = await getCurseStudent(user.id, user.token);
+                const periodResponse = await getPeriodStudent(user.id, user.token);
+                if (response && curseResponse && periodResponse) {
+                    const maiorPeriodo = periodResponse.length > 0 ? Math.max(...periodResponse.map(item => item.numero)) : null;
+                    setDataProfile(response);
+                    setCurse(curseResponse);
+                    setPeriod(maiorPeriodo);
                 } else {
-                    Alert.alert("Erro", "Usuário não encontrado.");
-                    navigation.goBack();
+                    Alert.alert("Erro", "Não foi possível carregar os dados.");
                 }
-            } catch (error) {
-                console.error(error);
-                Alert.alert("Erro", "Ocorreu um erro ao buscar os dados.");
-            } finally {
-                setLoading(false);
+            } else {
+                Alert.alert("Erro", "Usuário não encontrado.");
+                navigation.goBack();
             }
-        };
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Erro", "Ocorreu um erro ao buscar os dados.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            setLoading(true);
+            fetchData();
+        }, [])
+    );
 
     if (loading) {
         return (
@@ -91,7 +94,7 @@ export default function Perfil() {
                     </View>
                     <View style={s.information}>
                         <Text style={s.textCard}>Período:</Text>
-                        <Text style={s.value}>{period} Semestre</Text>
+                        <Text style={s.value}>{period ? `${period}º Semestre` : 'Período não informado'}</Text>
                     </View>
                 </View>
 
@@ -123,10 +126,10 @@ export default function Perfil() {
                 </View>
                 <View style={s.information}>
                     <Text style={s.label}>Cidade:</Text>
-                    <Text style={s.value}>{dataProfile.cidade}</Text>
+                    <Text style={s.value}>{dataProfile.cidade}, {dataProfile.UF}</Text>
                 </View>
 
-                <TouchableOpacity style={s.button}>
+                <TouchableOpacity style={s.button} onPress={() => navigation.navigate('EditProfile', { dataProfile })}>
                     <Text style={s.text}>EDITAR PERFIL</Text>
                 </TouchableOpacity>
             </View>

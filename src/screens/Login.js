@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { postLogin, getDataStudent } from '../services/api';
 
 const loginSchema = z.object({
-    email: z.string().email({ message: "Email inválido" }),
+    email: z.string().email({ message: "Email ou senha inválidos" }),
     senha: z.string()
         .min(8, { message: "Senha deve ter no mínimo 8 caracteres" })
         .regex(/[a-z]/, { message: "Senha deve conter letra minúscula" })
@@ -36,7 +36,6 @@ export default function Login() {
 
         try {
             const response = await postLogin(email, senha);
-            console.log("Response do login: ", response)
             if (response) {
                 const dataStudent = await getDataStudent(response.id, response.token)
                 if (dataStudent) {

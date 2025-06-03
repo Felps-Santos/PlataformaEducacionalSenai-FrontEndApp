@@ -7,6 +7,7 @@ import Tasks from "./screens/Tasks";
 import ReportCard from "./screens/ReportCard";
 import Grade from "./screens/Grade";
 import Profile from "./screens/Profile";
+import EditProfile from "./screens/EditProfile";
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +22,7 @@ export default function Routes() {
                 <Stack.Screen name="ReportCard" component={ReportCard} />
                 <Stack.Screen name="Grade" component={Grade} />
                 <Stack.Screen name="Profile" component={Profile} />
+                <Stack.Screen name="EditProfile" component={EditProfile} />
             </Stack.Navigator>
         </NavigationContainer>
     )

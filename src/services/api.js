@@ -80,3 +80,18 @@ export const getPeriodStudent = async (id, token) => {
         return null
     }
 }
+
+export const updateDataStudent = async (id, updatedData, token) => {
+    try {
+        const response = await api.put(`editar/${id}`, updatedData, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao atualizar os dados do estudante:", error);
+        throw error;
+    }
+};
