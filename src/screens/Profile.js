@@ -12,6 +12,17 @@ export default function Perfil() {
     const [dataProfile, setDataProfile] = useState(null);
     const [curse, setCurse] = useState(null);
     const [period, setPeriod] = useState(null);
+    const maskCPF = (cpf) => {
+        if (!cpf) return '';
+        return cpf.replace(/^(\d{3})\d{3}\d{3}(\d{2})$/, '$1.***.***-$2');
+    };
+
+    const maskPhone = (phone) => {
+        if (!phone) return '';
+        return phone.replace(/^(\d{2})\d{5}(\d{2})(\d{2})$/, '($1)*****-**$3');
+    };
+
+
 
     const fetchData = async () => {
         try {
@@ -100,12 +111,12 @@ export default function Perfil() {
 
                 <View style={s.information}>
                     <Text style={s.label}>CPF:</Text>
-                    <Text style={s.value}>{dataProfile.CPF}</Text>
+                    <Text style={s.value}>{maskCPF(dataProfile.CPF)}</Text>
                 </View>
 
                 <View style={s.information}>
                     <Text style={s.label}>Telefone:</Text>
-                    <Text style={s.value}>{dataProfile.telefone}</Text>
+                    <Text style={s.value}>{maskPhone(dataProfile.telefone)}</Text>
                 </View>
 
                 <Text style={[s.label, { marginTop: 10, color: colors.purpleLight, fontFamily: fontFamily.medium }]}>

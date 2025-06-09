@@ -72,7 +72,7 @@ export const getPeriodStudent = async (id, token) => {
                 Authorization: `Bearer ${token}`
             }
         });
-        if (response) {
+        if (response && response.data) {
             return response.data
         }
     } catch (error) {

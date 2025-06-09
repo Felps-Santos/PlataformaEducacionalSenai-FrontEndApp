@@ -46,7 +46,6 @@ export default function Tarefas() {
                 <Text style={s.title}>TAREFAS</Text>
             </View>
 
-            {/* Dropdown fixo */}
             <View style={s.filterContainer}>
                 <DropDownPicker
                     open={open}
